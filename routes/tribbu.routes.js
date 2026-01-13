@@ -1,0 +1,83 @@
+const express = require("express");
+const router = express.Router();
+const mongoose = require("mongoose");
+
+const Tribbu = require("../models/Tribbu.model");
+const User = require("../models/User.model");
+const { isAuthenticated } = require("../middleware/jwt.middleware");
+
+router.post("/tribbus", isAuthenticated, (req, res, next) => {
+  const { name, ownerId, members } = req.body;
+
+  Tribbu.create({ name, ownerId, members: [] })
+    .then((response) => res.json(response))
+    .catch((err) => {
+      console.log("Error while creating a Tribbu", err);
+      res.status(500).json({ error: "Error while creating a Tribbu" });
+    });
+});
+
+router.get("/tribbus", (req, res, next) => {
+  Tribbu.find()
+    .populate("User")
+    .then((allTribbus) => res.json(allTribbus))
+    .catch((err) => {
+      console.log("Error while getting the Tribbus", err);
+      res.status(500).json({ error: "Error while getting the Tribbus" });
+    });
+});
+
+router.get("/tribbus/:tribbuId", (req, res, next) => {
+  const { tribbuId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(tribbuId)) {
+    res.status(400).json({ error: "Specified id is not valid" });
+    return;
+  }
+
+  Tribbu.findById(tribbuId)
+    .populate("User")
+    .then((tribbu) => res.status(200).json(tribbu))
+    .catch((err) => {
+      console.log("Error while retrieving a Tribbu", err);
+      res.status(500).json({ error: "Error while retrieving a Tribbu" });
+    });
+});
+
+router.put("/tribbus/:tribbuId", isAuthenticated, (req, res, next) => {
+  const { tribbuId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(tribbuId)) {
+    res.status(400).json({ error: "Specified id is not valid" });
+    return;
+  }
+
+  Tribbu.findByIdAndUpdate(tribbuId, req.body, { new: true })
+    .then((updatedTribbu) => res.json(updatedTribbu))
+    .catch((err) => {
+      console.log("Error while updating a Tribbu", err);
+      res.status(500).json({ error: "Error while updating a Tribbu" });
+    });
+});
+
+router.delete("/tribbus/:tribbuId", isAuthenticated, (req, res, next) => {
+  const { tribbuId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(tribbuId)) {
+    res.status(400).json({ error: "Specified id is not valid" });
+    return;
+  }
+
+  Tribbu.findByIdAndRemove(tribbuId)
+    .then(() =>
+      res.json({
+        message: `Tribbu with ${tribbuId} is removed successfully.`,
+      })
+    )
+    .catch((err) => {
+      console.log("Error while deleting a Tribbu", err);
+      res.status(500).json({ error: "Error while deleting a Tribbu" });
+    });
+});
+
+module.exports = router;
