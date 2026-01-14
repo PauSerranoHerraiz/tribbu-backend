@@ -7,7 +7,7 @@ const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const { checkTribbuRole } = require("../middleware/auth.middleware");
 
-router.post("/tribbus", isAuthenticated, checkTribbuRole(["GUARDIÁN"]), (req, res, next) => {
+router.post("/tribbus", isAuthenticated, (req, res, next) => {
   const { name } = req.body;
   const ownerId = req.payload._id
 
