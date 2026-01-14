@@ -1,4 +1,5 @@
-const { Schema, model } = require("mongoose");
+const mongoose = require("mongoose");
+const { Schema, model } = mongoose;
 
 const childSchema = new Schema(
     {
@@ -16,7 +17,13 @@ const childSchema = new Schema(
         },
         notes: {
             type: String,
-        }
+        },
+        role: {
+                    type: String,
+                    enum: ["CACHORRO"],
+                    required: [true, "To set a role is required"],
+                    default: "CACHORRO"
+                },
     },
     {
         timestamps: true,

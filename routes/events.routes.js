@@ -27,7 +27,7 @@ router.get("/events", (req, res, next) => {
 });
 
 router.get("/events/:eventId", (req, res, next) => {
-  const { tribbuId } = req.params;
+  const { eventId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(eventId)) {
     res.status(400).json({ error: "Specified id is not valid" });
@@ -35,7 +35,10 @@ router.get("/events/:eventId", (req, res, next) => {
   }
 
   Event.findById(eventId)
-    .populate("User")
+    .populate("tribbuId")
+    .populate("childId")
+    .populate("assignedTo")
+    .populate("createdBy")
     .then((event) => res.status(200).json(event))
     .catch((err) => {
       console.log("Error while retrieving an event", err);
@@ -63,11 +66,11 @@ router.delete("/events/:eventId", isAuthenticated, (req, res, next) => {
   const { eventId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(eventId)) {
-    res.status(400).json({ error: "Specified id is not valid" });
-    return;
+    return res.status(400).json({ error: "Specified id is not valid" });
+    ;
   }
 
-  Event.findByIdAndRemove(eventId)
+  Event.findByIdAndDelete(eventId)
     .then(() =>
       res.json({
         message: `Event with ${eventId} is removed successfully.`,

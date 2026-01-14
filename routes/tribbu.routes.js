@@ -7,7 +7,8 @@ const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 router.post("/tribbus", isAuthenticated, (req, res, next) => {
-  const { name, ownerId, members } = req.body;
+  const { name } = req.body;
+  const ownerId = req.payload._id
 
   Tribbu.create({ name, ownerId, members: [] })
     .then((response) => res.json(response))
@@ -19,8 +20,9 @@ router.post("/tribbus", isAuthenticated, (req, res, next) => {
 
 router.get("/tribbus", (req, res, next) => {
   Tribbu.find()
-    .populate("User")
-    .then((allTribbus) => res.json(allTribbus))
+    .populate("ownerId")
+    .populate("members.userId")
+    .then((tribbus) => res.json(tribbus))
     .catch((err) => {
       console.log("Error while getting the Tribbus", err);
       res.status(500).json({ error: "Error while getting the Tribbus" });
@@ -36,7 +38,8 @@ router.get("/tribbus/:tribbuId", (req, res, next) => {
   }
 
   Tribbu.findById(tribbuId)
-    .populate("User")
+    .populate("ownerId")
+    .populate("members.userId")
     .then((tribbu) => res.status(200).json(tribbu))
     .catch((err) => {
       console.log("Error while retrieving a Tribbu", err);
@@ -68,7 +71,7 @@ router.delete("/tribbus/:tribbuId", isAuthenticated, (req, res, next) => {
     return;
   }
 
-  Tribbu.findByIdAndRemove(tribbuId)
+  Tribbu.findByIdAndDelete(tribbuId)
     .then(() =>
       res.json({
         message: `Tribbu with ${tribbuId} is removed successfully.`,

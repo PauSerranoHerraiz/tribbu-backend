@@ -9,7 +9,7 @@ const eventSchema = new Schema(
         },
         childId: {
             type: mongoose.Schema.Types.ObjectId,
-            red: "Child",
+            ref: "Child",
             required: [false, "A child id is required"]
         },
         title: {
@@ -37,7 +37,7 @@ const eventSchema = new Schema(
             required: true
         }
     },
-    { timestamp: true }
+    { timestamps: true }
 );
 
 const Event = model("Event", eventSchema);
