@@ -5,8 +5,9 @@ const mongoose = require("mongoose");
 const Child = require("../models/Child.model");
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+const { checkChildRole } = require("../middleware/auth.middleware");
 
-router.post("/children", isAuthenticated, (req, res, next) => {
+router.post("/children", isAuthenticated, checkChildRole(["GUARDIÁN"]), (req, res, next) => {
 
   Child.create(req.body)
     .then((response) => res.json(response))
@@ -16,7 +17,7 @@ router.post("/children", isAuthenticated, (req, res, next) => {
     });
 });
 
-router.get("/children", (req, res, next) => {
+router.get("/children", isAuthenticated, (req, res, next) => {
   Child.find()
     .populate("User")
     .then((allChildren) => res.json(allChildren))
@@ -26,7 +27,7 @@ router.get("/children", (req, res, next) => {
     });
 });
 
-router.get("/children/:childId", (req, res, next) => {
+router.get("/children/:childId", isAuthenticated, (req, res, next) => {
   const { childId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(childId)) {
@@ -42,7 +43,7 @@ router.get("/children/:childId", (req, res, next) => {
     });
 });
 
-router.put("/children/:childId", isAuthenticated, (req, res, next) => {
+router.put("/children/:childId", isAuthenticated, checkChildRole(["GUARDIÁN"]), (req, res, next) => {
   const { childId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(childId)) {
@@ -58,7 +59,7 @@ router.put("/children/:childId", isAuthenticated, (req, res, next) => {
     });
 });
 
-router.delete("/children/:childId", isAuthenticated, (req, res, next) => {
+router.delete("/children/:childId", isAuthenticated, checkChildRole(["GUARDIÁN"]), (req, res, next) => {
   const { childId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(childId)) {

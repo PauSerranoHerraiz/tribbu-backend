@@ -5,8 +5,9 @@ const mongoose = require("mongoose");
 const Event = require("../models/Event.model");
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+const { checkEventRole } = require("../middleware/auth.middleware");
 
-router.post("/events", isAuthenticated, (req, res, next) => {
+router.post("/events", isAuthenticated, checkEventRole(["GUARDIÁN", "PROTECTOR"]), (req, res, next) => {
 
   Event.create(req.body)
     .then((response) => res.json(response))
@@ -14,7 +15,7 @@ router.post("/events", isAuthenticated, (req, res, next) => {
       console.log("Error while creating an event", err);
       res.status(500).json({ error: "Error while creating an event" });
     });
-});
+}); 
 
 router.get("/events", (req, res, next) => {
   Event.find()
@@ -46,7 +47,7 @@ router.get("/events/:eventId", (req, res, next) => {
     });
 });
 
-router.put("/events/:eventId", isAuthenticated, (req, res, next) => {
+router.put("/events/:eventId", isAuthenticated, checkEventRole(["GUARDIÁN", "PROTECTOR"]), (req, res, next) => {
   const { eventId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(eventId)) {
@@ -62,7 +63,7 @@ router.put("/events/:eventId", isAuthenticated, (req, res, next) => {
     });
 });
 
-router.delete("/events/:eventId", isAuthenticated, (req, res, next) => {
+router.delete("/events/:eventId", isAuthenticated, checkEventRole(["GUARDIÁN"]), (req, res, next) => {
   const { eventId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(eventId)) {

@@ -5,8 +5,9 @@ const mongoose = require("mongoose");
 const Tribbu = require("../models/Tribbu.model");
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
+const { checkTribbuRole } = require("../middleware/auth.middleware");
 
-router.post("/tribbus", isAuthenticated, (req, res, next) => {
+router.post("/tribbus", isAuthenticated, checkTribbuRole(["GUARDIÁN"]), (req, res, next) => {
   const { name } = req.body;
   const ownerId = req.payload._id
 
@@ -47,7 +48,7 @@ router.get("/tribbus/:tribbuId", (req, res, next) => {
     });
 });
 
-router.put("/tribbus/:tribbuId", isAuthenticated, (req, res, next) => {
+router.put("/tribbus/:tribbuId", isAuthenticated, checkTribbuRole(["GUARDIÁN"]), (req, res, next) => {
   const { tribbuId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(tribbuId)) {
@@ -63,7 +64,7 @@ router.put("/tribbus/:tribbuId", isAuthenticated, (req, res, next) => {
     });
 });
 
-router.delete("/tribbus/:tribbuId", isAuthenticated, (req, res, next) => {
+router.delete("/tribbus/:tribbuId", isAuthenticated, checkTribbuRole(["GUARDIÁN"]), (req, res, next) => {
   const { tribbuId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(tribbuId)) {
