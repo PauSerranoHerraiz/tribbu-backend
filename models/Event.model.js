@@ -10,7 +10,7 @@ const eventSchema = new Schema(
         childId: {
             type: mongoose.Schema.Types.ObjectId,
             red: "Child",
-            required: [true, "A child id is required"]
+            required: [false, "A child id is required"]
         },
         title: {
             type: String,
