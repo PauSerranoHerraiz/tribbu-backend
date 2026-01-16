@@ -17,6 +17,7 @@ app.use("/auth", authRoutes);
 app.use("/api", require("./routes/tribbu.routes"));
 app.use("/api", require("./routes/events.routes"));
 app.use("/api", require("./routes/children.routes"));
+app.use("/api", require("./routes/user.routes"))
 
 require("./error-handling")(app);
 

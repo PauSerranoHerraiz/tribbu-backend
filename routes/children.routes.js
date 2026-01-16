@@ -7,7 +7,7 @@ const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const { checkChildRole } = require("../middleware/auth.middleware");
 
-router.post("/children", isAuthenticated, checkChildRole(["GUARDIÁN"]), (req, res, next) => {
+router.post("/children", isAuthenticated, (req, res, next) => {
 
   Child.create(req.body)
     .then((response) => res.json(response))

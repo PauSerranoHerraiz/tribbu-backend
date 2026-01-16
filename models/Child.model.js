@@ -19,11 +19,11 @@ const childSchema = new Schema(
             type: String,
         },
         role: {
-                    type: String,
-                    enum: ["CACHORRO"],
-                    required: [true, "To set a role is required"],
-                    default: "CACHORRO"
-                },
+            type: String,
+            enum: ["CACHORRO"],
+            required: [true, "To set a role is required"],
+            default: "CACHORRO"
+        },
     },
     {
         timestamps: true,

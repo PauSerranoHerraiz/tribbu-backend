@@ -10,7 +10,7 @@ const tribbuSchema = new Schema(
         ownerId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: [true, "An owner is required"]
+            // required: [true, "An owner is required"]
         },
         members: [
             {

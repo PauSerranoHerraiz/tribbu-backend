@@ -8,11 +8,21 @@ const { isAuthenticated } = require("../middleware/jwt.middleware");
 const { checkTribbuRole } = require("../middleware/auth.middleware");
 
 router.post("/tribbus", isAuthenticated, (req, res, next) => {
+  console.log ("payload", req.payload)
   const { name } = req.body;
   const ownerId = req.payload._id
 
-  Tribbu.create({ name, ownerId, members: [] })
-    .then((response) => res.json(response))
+  Tribbu.create({ 
+    name, 
+    ownerId: ownerId, 
+    members: [] })
+    .then((tribbu) => {
+      return User.findByIdAndUpdate(
+        ownerId,
+        { tribbu: tribbu._id },
+        { new: true }
+      ).then(() => res.json(tribbu));
+    })
     .catch((err) => {
       console.log("Error while creating a Tribbu", err);
       res.status(500).json({ error: "Error while creating a Tribbu" });
@@ -81,6 +91,29 @@ router.delete("/tribbus/:tribbuId", isAuthenticated, checkTribbuRole(["GUARDIÁN
     .catch((err) => {
       console.log("Error while deleting a Tribbu", err);
       res.status(500).json({ error: "Error while deleting a Tribbu" });
+    });
+});
+
+router.post("/tribbus/:tribbuId/members", isAuthenticated, checkTribbuRole(["GUARDIÁN"]), (req, res, next) => {
+  const { tribbuId } = req.params;
+  const { userId, role } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(tribbuId)) {
+    res.status(400).json({ error: "Specified id is not valid" });
+    return;
+  }
+
+  Tribbu.findByIdAndUpdate(
+    tribbuId,
+    { $push: { members: { userId, role } } },
+    { new: true }
+  )
+    .populate("ownerId")
+    .populate("members.userId")
+    .then((tribbu) => res.status(200).json(tribbu))
+    .catch((err) => {
+      console.log("Error adding member:", err);
+      res.status(500).json({ error: "Error adding member" });
     });
 });
 
