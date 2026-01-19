@@ -53,6 +53,22 @@ router.get("/children/:childId", isAuthenticated, (req, res, next) => {
     });
 });
 
+router.get("/tribbu/:tribbuId/children", isAuthenticated, (req, res, next) => {
+  const { tribbuId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(tribbuId)) {
+    res.status(400).json({ error: "Specified id is not valid" });
+    return;
+  }
+
+  Child.find({ tribbuId })
+    .then((children) => res.status(200).json(children))
+    .catch((err) => {
+      console.log("Error while retrieving children", err);
+      res.status(500).json({ error: "Error while retrieving children" });
+    });
+});
+
 router.put("/children/:childId", isAuthenticated, checkChildRole(["GUARDIÁN"]), (req, res, next) => {
   const { childId } = req.params;
 

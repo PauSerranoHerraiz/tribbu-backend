@@ -40,6 +40,24 @@ router.get("/tribbus", (req, res, next) => {
     });
 });
 
+router.get("/tribbus/user/my-tribbus", isAuthenticated, (req, res, next) => {
+  const userId = req.payload._id;
+
+  Tribbu.find({ 
+    $or: [
+      { ownerId: userId },
+      { "members.userId": userId }
+    ]
+  })
+    .populate("ownerId")
+    .populate("members.userId")
+    .then((tribbus) => res.json(tribbus))
+    .catch((err) => {
+      console.log("Error while getting user tribbus", err);
+      res.status(500).json({ error: "Error while getting user tribbus" });
+    });
+});
+
 router.get("/tribbus/:tribbuId", (req, res, next) => {
   const { tribbuId } = req.params;
 
