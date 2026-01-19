@@ -35,6 +35,8 @@ router.get("/events", (req, res, next) => {
   
   Event.find(filter)
     .populate("tribbuId")
+    .populate("childId")
+    .populate("responsibles", "name email")
     .then((allEvents) => res.json(allEvents))
     .catch((err) => next(err));
 });
@@ -50,6 +52,7 @@ router.get("/events/:eventId", (req, res, next) => {
     .populate("tribbuId")
     .populate("childId")
     .populate("assignedTo")
+    .populate("responsibles", "name email")
     .populate("createdBy")
     .then((event) => res.status(200).json(event))
     .catch((err) => next(err));
@@ -63,6 +66,8 @@ router.put("/events/:eventId", isAuthenticated, checkEventRole(["GUARDIÁN", "PR
   }
 
   Event.findByIdAndUpdate(eventId, req.body, { new: true })
+    .populate("childId")
+    .populate("responsibles", "name email")
     .then((updatedEvent) => res.json(updatedEvent))
     .catch((err) => next(err));
 });

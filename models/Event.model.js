@@ -10,7 +10,7 @@ const eventSchema = new Schema(
         childId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Child",
-            required: [false, "A child id is required"]
+            required: false
         },
         title: {
             type: String,
@@ -27,6 +27,14 @@ const eventSchema = new Schema(
         assignedTo: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User"
+        },
+        responsibles: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        }],
+        completed: {
+            type: Boolean,
+            default: false
         },
         notes: {
             type: String
