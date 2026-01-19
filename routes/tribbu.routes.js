@@ -19,7 +19,7 @@ router.post("/tribbus", isAuthenticated, (req, res, next) => {
     .then((tribbu) => {
       return User.findByIdAndUpdate(
         ownerId,
-        { tribbu: tribbu._id },
+        { tribbuId: tribbu._id },
         { new: true }
       ).then(() => res.json(tribbu));
     })
@@ -51,12 +51,14 @@ router.get("/tribbus/:tribbuId", (req, res, next) => {
   Tribbu.findById(tribbuId)
     .populate("ownerId")
     .populate("members.userId")
+    .populate("children")
     .then((tribbu) => res.status(200).json(tribbu))
     .catch((err) => {
       console.log("Error while retrieving a Tribbu", err);
       res.status(500).json({ error: "Error while retrieving a Tribbu" });
     });
 });
+
 
 router.put("/tribbus/:tribbuId", isAuthenticated, checkTribbuRole(["GUARDIÁN"]), (req, res, next) => {
   const { tribbuId } = req.params;

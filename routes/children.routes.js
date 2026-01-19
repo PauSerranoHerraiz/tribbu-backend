@@ -3,28 +3,38 @@ const router = express.Router();
 const mongoose = require("mongoose");
 
 const Child = require("../models/Child.model");
+const Tribbu = require("../models/Tribbu.model");
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const { checkChildRole } = require("../middleware/auth.middleware");
 
-router.post("/children", isAuthenticated, (req, res, next) => {
+router.post("/children", isAuthenticated, async (req, res, next) => {
+  const { tribbuId, name, birthDate, notes } = req.body;
 
-  Child.create(req.body)
-    .then((response) => res.json(response))
-    .catch((err) => {
-      console.log("Error while creating a child", err);
-      res.status(500).json({ error: "Error while creating a child" });
-    });
-});
+  try {
 
-router.get("/children", isAuthenticated, (req, res, next) => {
-  Child.find()
-    .populate("User")
-    .then((allChildren) => res.json(allChildren))
-    .catch((err) => {
-      console.log("Error while getting the child", err);
-      res.status(500).json({ error: "Error while getting the child" });
+    if (!tribbuId) {
+      return res.status(400).json({ error: "Tribbu ID is required" });
+    }
+
+    const child = await Child.create({
+      tribbuId,
+      name,
+      birthDate,
+      notes
     });
+
+    await Tribbu.findByIdAndUpdate(
+      tribbuId,
+      { $push: { children: child._id } },
+      { new: true }
+    );
+
+    res.status(201).json(child);
+  } catch (err) {
+    console.log("Error while creating a child", err);
+    res.status(500).json({ error: "Error while creating a child" });
+  }
 });
 
 router.get("/children/:childId", isAuthenticated, (req, res, next) => {

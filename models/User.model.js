@@ -18,6 +18,10 @@ const userSchema = new Schema(
       required: [true, "Name is required."],
       trim: true
     },
+    tribbuId: {
+      type: Schema.Types.ObjectId,
+      ref: "Tribbu"
+    }
   },
   {
     timestamps: true,

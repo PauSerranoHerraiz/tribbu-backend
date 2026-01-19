@@ -27,6 +27,12 @@ const tribbuSchema = new Schema(
                 },
             }
         ],
+        children: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Child"
+            }
+        ]
     },
     {
         timestamps: true,

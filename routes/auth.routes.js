@@ -94,7 +94,10 @@ router.post("/login", (req, res, next) => {
 router.get("/verify", isAuthenticated, (req, res, next) => {
   console.log(`req.payload`, req.payload);
 
-  res.status(200).json(req.payload);
+  User.findById(req.payload._id)
+    .populate("tribbuId")
+    .then((user) => res.status(200).json(user))
+    .catch((err) => next(err));
 });
 
 module.exports = router;
