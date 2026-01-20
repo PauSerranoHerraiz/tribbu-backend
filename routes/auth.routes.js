@@ -1,12 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
+const admin = require("../services/firebaseAdmin");
 const bcrypt = require("bcrypt");
-
 const jwt = require("jsonwebtoken");
-
 const User = require("../models/User.model");
-
 const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
 const saltRounds = 10;
@@ -48,12 +46,9 @@ router.post("/signup", (req, res, next) => {
     })
     .then((createdUser) => {
       const { email, name, _id } = createdUser;
-
-      const user = { email, name, _id };
-
-      res.status(201).json({ user: user });
+      res.status(201).json({ user: { email, name, _id } });
     })
-    .catch((err) => next(err)); 
+    .catch((err) => next(err));
 });
 
 router.post("/login", (req, res, next) => {
@@ -75,7 +70,6 @@ router.post("/login", (req, res, next) => {
 
       if (passwordCorrect) {
         const { _id, email, name } = foundUser;
-
         const payload = { _id, email, name };
 
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
@@ -83,7 +77,7 @@ router.post("/login", (req, res, next) => {
           expiresIn: "6h",
         });
 
-        res.status(200).json({ authToken: authToken });
+        res.status(200).json({ authToken });
       } else {
         res.status(401).json({ message: "Unable to authenticate the user" });
       }
@@ -94,17 +88,8 @@ router.post("/login", (req, res, next) => {
 router.post("/google", async (req, res, next) => {
   try {
     const { idToken } = req.body;
-
-    const admin = require("firebase-admin");
-
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        }),
-      });
+    if (!idToken) {
+      return res.status(400).json({ message: "idToken is required" });
     }
 
     const decodedToken = await admin.auth().verifyIdToken(idToken);
