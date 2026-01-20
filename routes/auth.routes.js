@@ -91,6 +91,56 @@ router.post("/login", (req, res, next) => {
     .catch((err) => next(err));
 });
 
+router.post("/google", async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+
+    const admin = require("firebase-admin");
+
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        }),
+      });
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { email, name, picture, uid } = decodedToken;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const randomPassword = require("crypto").randomBytes(32).toString("hex");
+      const salt = bcrypt.genSaltSync(saltRounds);
+      const hashedPassword = bcrypt.hashSync(randomPassword, salt);
+
+      user = await User.create({
+        email,
+        name: name || email.split("@")[0],
+        password: hashedPassword,
+        googleId: uid,
+        avatar: picture,
+      });
+    }
+
+    const { _id } = user;
+    const payload = { _id, email, name: user.name };
+
+    const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+      algorithm: "HS256",
+      expiresIn: "6h",
+    });
+
+    res.status(200).json({ authToken });
+  } catch (error) {
+    console.error("Error en login con Google:", error);
+    res.status(401).json({ message: "Invalid Google token" });
+  }
+});
+
 router.get("/verify", isAuthenticated, (req, res, next) => {
   console.log(`req.payload`, req.payload);
 
