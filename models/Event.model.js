@@ -43,7 +43,13 @@ const eventSchema = new Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true
-        }
+        },
+        checklistItems: [
+            {
+                text: { type: String, trim: true, required: true },
+                completed: { type: Boolean, default: false },
+            },
+        ]
     },
     { timestamps: true }
 );
