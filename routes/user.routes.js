@@ -1,15 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User.model");
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 
-router.get("/users/search", (req, res, next) => {
-  const { query } = req.query;
+router.get("/users/search", isAuthenticated, (req, res, next) => {
+  const { email } = req.query;
+
+  if (!email || email.length < 3) {
+    return res.json([]);
+  }
+
   User.find({
-    $or: [
-      { email: { $regex: query, $options: "i" } },
-      { name: { $regex: query, $options: "i" } }
-    ]
+    email: { $regex: email, $options: "i" }
   })
+    .select("_id name email")
+    .limit(5) 
     .then((users) => res.json(users))
     .catch((err) => {
       console.log("Error searching users", err);
