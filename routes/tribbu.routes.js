@@ -13,7 +13,16 @@ router.post("/tribbus", isAuthenticated, (req, res) => {
   const { name } = req.body;
   const ownerId = req.payload._id;
 
-  Tribbu.create({ name, ownerId, members: [] })
+  Tribbu.create({
+    name,
+    ownerId,
+    members: [
+      {
+        userId: ownerId,
+        role: "GUARDIÁN", 
+      },
+    ],
+  })
     .then((tribbu) =>
       User.findByIdAndUpdate(ownerId, { tribbuId: tribbu._id }, { new: true }).then(() =>
         res.json(tribbu)
