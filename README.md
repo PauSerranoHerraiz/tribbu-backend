@@ -20,6 +20,29 @@ Este proyecto expone una **API REST** responsable de la autenticación, la lógi
 - **Nodemon** - Recarga automática en desarrollo
 
 ---
+## Requisitos previos
+- Node.js 18+
+- MongoDB accesible
+- Variables de entorno (.env)
+
+## Variables de entorno necesarias
+```
+PORT=5005
+MONGODB_URI=mongodb://127.0.0.1:27017/tribbu-backend
+TOKEN_SECRET=tu_secreto_jwt
+ORIGIN=http://localhost:3000        # CORS frontend
+FRONTEND_URL=http://localhost:5173   # Links en invitaciones
+# Login con Google (Firebase Admin):
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+# SMTP (opcional, para correos):
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM="Tribbu <no-reply@tu-dominio.com>"
+```
 
 ## Instalación y ejecución
 
