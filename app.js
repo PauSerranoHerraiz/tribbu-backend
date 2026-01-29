@@ -22,11 +22,23 @@ app.use("/api", indexRoutes);
 const authRoutes = require("./routes/auth.routes");
 app.use("/auth", authRoutes);
 
-app.use("/api", require("./routes/tribbu.routes"));
-app.use("/api", require("./routes/events.routes"));
-app.use("/api", require("./routes/children.routes"));
-app.use("/api", require("./routes/user.routes"))
+const tribbuRoutes = require("./routes/tribbu.routes");
+app.use("/api", tribbuRoutes);
+
+const userRoutes = require("./routes/user.routes");
+app.use("/api", userRoutes);
+
+const eventRoutes = require("./routes/events.routes");
+app.use("/api", eventRoutes);
+
+const childrenRoutes = require("./routes/children.routes");
+app.use("/api", childrenRoutes);
+
+const notificationRoutes = require("./routes/notifications.routes");
+app.use("/api", notificationRoutes);
 
 require("./error-handling")(app);
+
+connectDB();
 
 module.exports = app;

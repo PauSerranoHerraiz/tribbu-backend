@@ -4,9 +4,12 @@ const mongoose = require("mongoose");
 
 const Event = require("../models/Event.model");
 const Tribbu = require("../models/Tribbu.model");
+const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 const { checkEventRole } = require("../middleware/auth.middleware");
+const NotificationService = require("../services/notificationsService");
 
+// Crear evento
 router.post("/events", isAuthenticated, (req, res, next) => {
   const { tribbuId, checklistItems = [] } = req.body;
 
@@ -18,6 +21,12 @@ router.post("/events", isAuthenticated, (req, res, next) => {
           ...req.body,
           checklistItems,
           createdBy: userId,
+        }).then((event) => {
+          // 🔔 CREAR NOTIFICACIÓN
+          return User.findById(userId).then((user) => {
+            NotificationService.notifyEventCreated(event, user, tribbuId);
+            return event;
+          });
         });
       }
       throw new Error("Insufficient permissions");
@@ -29,6 +38,7 @@ router.post("/events", isAuthenticated, (req, res, next) => {
     });
 });
 
+// Obtener todos los eventos
 router.get("/events", (req, res, next) => {
   const { tribbuId } = req.query;
   const filter = tribbuId ? { tribbuId } : {};
@@ -41,6 +51,7 @@ router.get("/events", (req, res, next) => {
     .catch((err) => next(err));
 });
 
+// Obtener evento por ID
 router.get("/events/:eventId", (req, res, next) => {
   const { eventId } = req.params;
 
@@ -58,6 +69,7 @@ router.get("/events/:eventId", (req, res, next) => {
     .catch((err) => next(err));
 });
 
+// Actualizar evento
 router.put("/events/:eventId", isAuthenticated, checkEventRole(["GUARDIÁN", "PROTECTOR"]), (req, res, next) => {
   const { eventId } = req.params;
   const { checklistItems = [] } = req.body;
@@ -66,13 +78,22 @@ router.put("/events/:eventId", isAuthenticated, checkEventRole(["GUARDIÁN", "PR
     return res.status(400).json({ error: "Invalid eventId" });
   }
 
-  Event.findByIdAndUpdate(
-    eventId,
-    { ...req.body, checklistItems },
-    { new: true }
-  )
-    .populate("childId")
-    .populate("responsibles", "name email")
+  Event.findById(eventId)
+    .then((event) => {
+      return Event.findByIdAndUpdate(
+        eventId,
+        { ...req.body, checklistItems },
+        { new: true }
+      )
+        .populate("childId")
+        .populate("responsibles", "name email")
+        .then((updatedEvent) => {
+          return User.findById(req.payload._id).then((user) => {
+            NotificationService.notifyEventUpdated(updatedEvent, user, event.tribbuId);
+            return updatedEvent;
+          });
+        });
+    })
     .then((updatedEvent) => res.json(updatedEvent))
     .catch((err) => next(err));
 });
@@ -84,7 +105,17 @@ router.delete("/events/:eventId", isAuthenticated, checkEventRole(["GUARDIÁN"])
     return res.status(400).json({ error: "Invalid eventId" });
   }
 
-  Event.findByIdAndDelete(eventId)
+  Event.findById(eventId)
+    .then((event) => {
+      const eventTitle = event.title;
+      const tribbuId = event.tribbuId;
+
+      return Event.findByIdAndDelete(eventId).then(() => {
+        return User.findById(req.payload._id).then((user) => {
+          NotificationService.notifyEventDeleted(eventTitle, user, tribbuId);
+        });
+      });
+    })
     .then(() => res.json({ message: "Event deleted" }))
     .catch((err) => next(err));
 });
